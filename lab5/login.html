@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Welcome</title>
+		<link rel="stylesheet" href="styles.css">
+
+		<script src="jquery.js"></script>
+		<script>
+			function pageSetup() {
+			var form = document.getElementsByClassName("global")[0];
+			var offsetHeight = (window.innerHeight - form.offsetHeight)/2;
+			var offsetWidth = (window.innerWidth - form.offsetWidth)/2;
+			
+			form.style.position = "absolute";
+			if(offsetHeight <= 0) offsetHeight = 0;
+			form.style.top = offsetHeight + "px";
+			form.style.left = offsetWidth + "px";
+		}
+		</script>
+
+
+
+
+		<script>
+			function CheckLogged(){
+				$.ajax({
+					type: 'POST',
+					url: 'get_acc_data.php',
+					dataType: 'json',
+					data: {},
+
+					success: function(json, textstatus) {
+						if(json.logged != false)
+							location.href = 'index.html';
+					}
+				});
+			}
+			function CheckAccount(){
+				var login = $("#username").val();
+				var pass = $("#password").val();
+				$.ajax({
+					type: 'POST',
+					url: 'login.php',
+					dataType: 'json',
+					data: { username: login, password: pass},
+
+					success: function(json, textstatus) {
+						isValid = json.valid;
+
+						if(!isValid)
+						{
+							$("#error_message").html("Invalid username or password.<br>");
+							pageSetup();
+						}
+						else
+						{
+							location.href = 'index.html';
+						}
+					}
+				});
+			}
+		</script>
+	</head>
+	<body onload='CheckLogged(); $("#username").val(""); $("#password").val(""); pageSetup();' onresize='pageSetup();'>
+
+		<div class="global">
+		<form action="#" onsubmit='CheckAccount(); return false;' method='POST' enctype="multipart/form-data">
+				Login
+				<br>
+
+				Username: 
+				<input type='text' name='username' id='username'>
+				<br>
+				Password: 
+				<input type='password' name='password' id='password'>
+				<br>
+
+				<span id='error_message' style="color: red; font-size: 12px;">
+					
+				</span>
+				<input type='submit' name='submit' value='Submit' id ='sumbit_button'>
+			</form>
+			<a href="registration.html">Register</a>
+		</div>
+	</body>
+</html>

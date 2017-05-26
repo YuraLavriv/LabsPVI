@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Hashing</title>
+		<link rel="stylesheet" href="styles.css">
+
+		<script src="jquery.js"></script>
+		<script>
+			function pageSetup() {
+			var form = document.getElementsByClassName("global")[0];
+			var offsetHeight = (window.innerHeight - form.offsetHeight)/2;
+			var offsetWidth = (window.innerWidth - form.offsetWidth)/2;
+			
+			form.style.position = "absolute";
+			if(offsetHeight <= 0) offsetHeight = 0;
+			form.style.top = offsetHeight + "px";
+			form.style.left = offsetWidth + "px";
+		}
+		</script>
+
+		<script>
+		var username;
+		function CheckLogged(){
+				var login = $("#username").val();
+				var pass = $("#password").val();
+				$.ajax({
+					type: 'POST',
+					url: 'main.php',
+					dataType: 'json',
+					data: {},
+
+					success: function(json, textstatus) {
+						if(json.logged == false)
+							location.href = 'login.html';
+						else
+						{
+							$("#username").html(json.username);
+						}
+					
+					}
+				})
+			}
+		</script>
+	</head>
+	<body onload='CheckLogged(); pageSetup();' onresize='pageSetup();'>
+		<a class="menu_button" href="logout.php">logout</a>
+		<a class="menu_button" href="Index.html">Home</a>
+
+		<div class="global">
+			
+		<form action="hash.php" method="post" enctype="multipart/form-data">
+			Browse file to hash
+			<br>
+			<input type="file" name="file" accept="text/plain"/>
+			<br>
+			<input type="submit" name="submit" value="Sumbit" />
+			</form>
+		</div>
+	</body>
+</html>

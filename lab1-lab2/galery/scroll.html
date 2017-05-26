@@ -1,0 +1,48 @@
+<html>
+<head>
+<title>A DHTML Scrolling Window</title>
+<meta charset="utf-8">
+<link rel="stylesheet" href="styles.css">
+<script language="JavaScript">
+var pos=100;
+function Scroll() {
+  if (!document.getElementById("thetext")) return;
+  obj=document.getElementById("thetext");
+  pos -=1;
+  if (pos < 0-obj.offsetHeight+130) return;
+  obj.style.top=pos;  
+  window.setTimeout("Scroll();",30);
+}
+function addImages()
+		{
+			if (!document.getElementById("imageHolder")) return;
+
+			for(i = 1; i <= 26; i++)
+			{
+			var elem = document.createElement("img");
+			elem.setAttribute("src", "images/Grass (" + i + ").png");
+			elem.setAttribute("alt", "Grass" + i);
+			document.getElementById("imageHolder").appendChild(elem);
+
+			}
+		}
+</script>
+</head>
+<body onLoad="Scroll(); addImages();">
+<h1>Приклад вікна з рухомим текстом</h1>
+<div id="thewindow" style="position:relative;width:180;height:150;
+  overflow:hidden; border-width:2px; border-style:solid; border-color:red">
+<div id="thetext" style="position:absolute;width:170;left:5;top:100">
+<p>Перший параграф</p>
+<p>Тут містяться тільки теги HTML, наприлад, <a href="http://www.starlingtech.com/dhtml/">Посилання</a>.</p>
+<p>Довільний параграф </p>
+<div id="imageHolder">
+
+</div>
+<ul><li>Приклад списку</li></ul>
+<p>Текст Завершено </p>
+<p><b>[<a href="javascript:pos=100;Scroll();">Почати знову</a>]</b></p>
+</div>
+</div>
+</body>
+</html>

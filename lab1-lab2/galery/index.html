@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Lab1</title>
+	<link rel="stylesheet" href="styles.css">
+
+	<script>
+		var pos=100;
+		function Scroll() {
+			if (!document.getElementById("imageHolder")) return;
+			obj=document.getElementById("imageHolder");
+			pos -=1;
+			if (pos + obj.offsetHeight < 300) return;
+			obj.style.top=pos + "px";  
+			window.setTimeout("Scroll();",30);
+		}
+
+		function addImages() {
+			if (!document.getElementById("imageHolder")) return;
+
+			for(i = 1; i <= 26; i++)
+			{
+			var elem = document.createElement("img");
+			elem.setAttribute("src", "images/Grass (" + i + ").png");
+			elem.setAttribute("alt", "Grass" + i);
+			document.getElementById("imageHolder").appendChild(elem);
+			}
+		}
+		function createUploadFileWindow(Left,Top) {
+			form = document.createElement("form");
+			form.setAttribute("class","generated");
+			form.setAttribute("action","SaveFile.php");
+			form.setAttribute("method","POST");
+			form.setAttribute("enctype","multipart/form-data");
+			form.style.left = Left + "px";
+			form.style.top = Top + "px";
+			form.innerHTML = "Chose file ";
+			document.getElementsByClassName("global")[0].appendChild(form);
+			textfield = document.createElement("input");
+			textfield.setAttribute("type","text");
+			textfield.setAttribute("name","fileurl");
+			form.appendChild(textfield);
+			sumbit = document.createElement("input");
+			sumbit.setAttribute("type","submit");
+			sumbit.setAttribute("name","submit");
+			sumbit.setAttribute("value","Upload file");
+			form.appendChild(sumbit);
+		}
+	</script>
+</head>
+<body onload="addImages(); Scroll(); alert('Any message');">
+
+<div class="global">
+Galery<br>
+	<div id="scrollWindow">
+		<div id="imageHolder" >
+		</div>
+	</div>
+	<br>
+	<script>
+		createUploadFileWindow(100,500);
+	</script>
+</div>
+
+</body>
+</html>
+

@@ -1,0 +1,4 @@
+id	name	price	count
+1	bread	8.5	100
+3	sugar	15	35
+8	sdfdf	0	0

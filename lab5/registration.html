@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Registration</title>
+		<link rel="stylesheet" href="styles.css">
+
+		<script src="jquery.js"></script>
+		<script>
+			function pageSetup() {
+			var form = document.getElementsByClassName("global")[0];
+			var offsetHeight = (window.innerHeight - form.offsetHeight)/2;
+			var offsetWidth = (window.innerWidth - form.offsetWidth)/2;
+			
+			form.style.position = "absolute";
+			if(offsetHeight <= 0) offsetHeight = 0;
+			form.style.top = offsetHeight + "px";
+			form.style.left = offsetWidth + "px";
+		}
+		</script>
+
+
+
+
+		<script>
+			function CheckPassword(str)
+			{
+			    // at least one number, one lowercase and one uppercase letter
+			    // at least six characters that are letters, numbers or the underscore
+			    var re = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])\w{6,}$/;
+			    return re.test(str);
+			}
+			function CheckUsername(str)
+			{
+			    //numbers, lowercase and uppercase letters or underscope
+			    // at least four characters
+			    re = /^(?=.*\d|.*[a-z]|.*[A-Z])\w{4,}$/;
+			    return re.test(str);
+			}
+
+			function CheckLogged(){
+				$.ajax({
+					type: 'POST',
+					url: 'get_acc_data.php',
+					dataType: 'json',
+					data: {},
+
+					success: function(json, textstatus) {
+						if(json.logged != false)
+							location.href = 'index.html';
+					}
+				});
+			}
+			function CheckAccount(){
+				var login = $("#username").val();
+				var pass = $("#password").val();
+
+				if(!CheckUsername(login))
+				{
+					$("#error_message").html("Username is incorect. It must be 4 chars at least,  may contain numbers, uppercase and lowercase letters and underscope.<br>");
+					pageSetup();
+					return false;
+				}
+				else
+					$("#error_message").html("");
+
+				if(!CheckPassword(pass))
+				{
+					$("#error_message").html("Password is incorect. It must be 6 chars at least, must contain numbers, uppercase and lowercase letters.<br>");
+					pageSetup();
+					return false;
+				}
+				else
+					$("#error_message").html("");
+
+				$.ajax({
+					type: 'POST',
+					url: 'registration.php',
+					dataType: 'json',
+					data: { username: login, password: pass},
+
+					success: function(json, textstatus) {
+						if(json.exists)
+						{
+							$("#error_message").html("This username is busy.<br>");
+							pageSetup();
+						}
+						else
+						{
+							location.href = 'index.html';
+						}
+					}
+				});
+			}
+		</script>
+	</head>
+	<body onload='CheckLogged(); $("#username").val(""); $("#password").val(""); pageSetup();' onresize='pageSetup();'>
+
+		<div class="global">
+		<form action="#" onsubmit='CheckAccount(); return false;' method='POST' enctype="multipart/form-data">
+				Registration
+				<br>
+
+				Username: 
+				<input type='text' name='username' id='username'>
+				<br>
+				Password: 
+				<input type='text' name='password' id='password'>
+				<br>
+
+				<span id='error_message' style="color: red; font-size: 12px;">
+					
+				</span>
+				<input type='submit' name='submit' value='Submit' id ='sumbit_button'>
+			</form>
+			<a href="login.html">Login</a>
+		</div>
+	</body>
+</html>

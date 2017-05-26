@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Lab1</title>
+	<link rel="stylesheet" href="styles.css">
+
+	<script>
+		function setMethod(method_name) {
+			if(method_name.toUpperCase() == "POST"|| method_name.toUpperCase() == "GET")
+				document.getElementsByTagName("form")[0].setAttribute("method", method_name);
+		}
+		function pageSetup() {
+			var form = document.getElementsByTagName("form")[0];
+			var offsetHeight = (window.innerHeight - form.offsetHeight)/2;
+			var offsetWidth = (window.innerWidth - form.offsetWidth)/2;
+			
+			form.style.position = "absolute";
+			form.style.top = offsetHeight + "px";
+			form.style.left = offsetWidth + "px";
+		}
+		function checkForm() {
+			result = confirm("You won`t be able to change your login. Continue?");
+			return result;
+		}
+	</script>
+</head>
+<body onload="pageSetup();" onresize="pageSetup();">
+
+<form class="global" action='process.php' method='POST' enctype="multipart/form-data" onsubmit="return checkForm();">
+	Register
+	<br>
+
+	Username: 
+	<input type='text' name='login' >
+	<br>
+	Password: 
+	<input type='password' name='pass' >
+	<br>
+
+	Aatar: 
+	<input type='file' name='userfile' >
+	<br>
+
+	Program to run: 
+	<input type='text' name='progname' >
+	<br>
+
+	Send method:
+	<br>
+	 <input type="radio" name="send_method" onclick="setMethod('POST');" checked> POST<br>
+	 <input type="radio" name="send_method" onclick="setMethod('GET');"> GET<br>
+
+	<input type='submit' name='submit' value='Submit' id ='sumbit_button'>
+</form>
+
+</body>
+</html>
+

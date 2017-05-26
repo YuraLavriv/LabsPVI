@@ -1,0 +1,4 @@
+id	name	salary
+1	Vasily Pupkin	500
+2	Peter Johnson	1200
+3	Albert	100

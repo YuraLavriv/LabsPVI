@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Home</title>
+		<link rel="stylesheet" href="styles.css">
+
+		<script src="jquery.js"></script>
+		<script>
+			function pageSetup() {
+			var form = document.getElementsByClassName("global")[0];
+			var offsetHeight = (window.innerHeight - form.offsetHeight)/2;
+			var offsetWidth = (window.innerWidth - form.offsetWidth)/2;
+			
+			form.style.position = "absolute";
+			if(offsetHeight <= 0) offsetHeight = 0;
+			form.style.top = offsetHeight + "px";
+			form.style.left = offsetWidth + "px";
+		}
+		</script>
+
+		<script>
+		var root;
+		var node = [];
+		var node_count;
+
+		var current_table = null;
+
+		function getDBTree(){
+				$.ajax({
+					type: 'POST',
+					url: 'db_tree.php',
+					dataType: 'json',
+					data: {},
+
+					success: function(json, textstatus) {
+						setupDBTree(json);
+					}
+				});
+		}
+
+		function getTable(node){
+			$.ajax({
+				type: 'POST',
+				url: 'get_table.php',
+				dataType: 'json',
+				data: { table_name: node },
+				success: function(json, textstatus) {
+					$("#table").html(json["table_html"]);
+				}
+			});
+		}
+
+		function getTableFile(node){
+			$.ajax({
+				type: 'POST',
+				url: 'write_file_query.php',
+				dataType: 'json',
+				data: { table_name: node },
+				success: function(json, textstatus) {
+					console.log(json["table_file_content"]);
+					download(json["table_file_name"], json["table_file_content"]);
+				}
+			});
+		}
+
+		function updateNewNode(table, params){
+			$.ajax({
+				type: 'POST',
+				url: 'add_to_table_query.php',
+				dataType: 'json',
+				data: { table_name: table, note: JSON.stringify(params) },
+				success: function(json, textstatus) {
+					loadTable(table);
+				}
+			});
+		}
+
+		function download(filename, text){
+			console.log(encodeURIComponent(text));
+			var pom = document.createElement('a');
+			pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+			pom.setAttribute('download', filename);
+
+			if(document.createEvent){
+				var event = document.createEvent('MouseEvents');
+				event.initEvent('click', true, true);
+				pom.dispatchEvent(event);
+			}
+			else
+				pom.click();
+		}
+
+		function setupDBTree(tree){
+			root = tree["db_name"];
+
+			node_count = 0;
+			while(tree[node_count])
+				node.push(tree[node_count++]);
+
+
+				var html_tree = "<span class='tabed' style='padding-left: 2em;'> Database: " + root + "</span><br>";
+
+				for(var i = 0; i < node_count; i++)
+					html_tree += "<a class='tabed' onclick='loadTable(\"" + node[i].name + "\");'>|--  " + node[i].name + " (" + node[i].field_count + " fields)</span><br>";
+
+			$("#side_bar").html(html_tree);
+		}
+
+		function loadTable(node){
+			current_table = node;
+			$("#hidable").show();
+			$("#table_name").html(node);
+			$("#table").html("");
+			getTable(node);
+		}
+		
+		function addNote() {
+			var params = [];
+			var result = " ";
+			var canceled = false;
+			
+			$.each($("th"), function(index, cell) {
+
+				if($(cell).text() == "id") 
+					params.push(0);
+				else if (result == null || result == "") {
+					canceled = true;
+				}
+				else {
+					result = prompt($(cell).text(), "");
+					
+					params.push(result);
+				}
+			});
+
+			if(!canceled)
+				updateNewNode(current_table, params)
+		}
+
+		function remove_note() {
+			id_to_remove = prompt("Id to remove", "");
+			if(id_to_remove == null)
+				return 0;
+			console.log(current_table);
+			$.ajax({
+				type: 'POST',
+				url: 'remove_note_query.php',
+				dataType: 'json',
+				data: { table_name: current_table, id: id_to_remove },
+				success: function(json, textstatus) {
+					console.log(json);
+					loadTable(current_table);
+				}
+			});
+		}
+
+		function saveTable(){
+			getTableFile(current_table);
+		}
+
+		function sendFileToLoad(data){
+			$.ajax({
+				type: 'POST',
+				url: 'read_file.php',
+				dataType: 'json',
+				data: { 
+					content: data,
+					table_name: current_table
+				},
+				success: function(json, textstatus) {
+					loadTable(current_table);
+					console.log("done");
+				}
+			});
+		}
+
+		function loadTableFile(){
+			//openfiledialog
+			file_picker = document.createElement('input');
+			file_picker.setAttribute('id', 'file_picker');
+			file_picker.setAttribute('type', 'file');
+
+			file_picker.onchange = function(event) {
+				var file = file_picker.files[0];
+
+				var reader = new FileReader();
+		       	reader.onload = function() {
+		         	console.log("read: " + this.result);   
+		         	sendFileToLoad(this.result);         
+		        }		        
+			
+				reader.readAsText(file);				
+			}
+
+			if(document.createEvent){
+				var event = document.createEvent('MouseEvents');
+				event.initEvent('click', true, true);
+				file_picker.dispatchEvent(event);
+			}
+			else
+				file_picker.click();
+
+		}
+		</script>
+	</head>
+	<body onload='getDBTree(); $("#hidable").hide()'>
+		<div id="side_bar" style="position: absolute; top:2em;">
+			
+		</div>
+		<div class="global">
+ 			<span id="table_name" style="font-size: 24px">
+				Chose a table
+			</span>
+			<br>
+				<div id="table" style="margin: 10px;">
+					
+				</div>
+				<span id="hidable">
+					<a class="button" id="add_button" onclick="addNote();" style="float:left;">Add note</a>
+					<a class="button" id="remove_button" onclick="remove_note();" style="float:left;">Remove note</a>
+					<a class="button" onclick="saveTable();" style="float:right;">Save to file</a>
+					<a class="button" onclick="loadTableFile();" style="float:right;">Load from file</a>
+				</span>
+				<br>
+				<br>
+				<br>
+				<br>
+				<br>
+				<br>
+		</div>
+	</body>
+</html>

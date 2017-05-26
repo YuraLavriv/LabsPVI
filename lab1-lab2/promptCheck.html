@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Lab2</title>
+	<link rel="stylesheet" href="styles.css">
+
+	<script>
+		
+		function pageSetup() {
+			var obj = document.getElementsByClassName("global")[0];
+			var offsetHeight = (window.innerHeight - obj.offsetHeight)/2;
+			var offsetWidth = (window.innerWidth - obj.offsetWidth)/2;
+			
+			obj.style.position = "absolute";
+			obj.style.top = offsetHeight + "px";
+			obj.style.left = offsetWidth + "px";
+		}
+		function askName() {
+			result = prompt("Enter your name", "");
+			var obj = document.getElementsByClassName("global")[0];
+			if(!result) return;
+			obj.innerHTML = "Hello " + result + "!<br>" + obj.innerHTML;
+			pageSetup();
+		}
+		function showURL(){
+			var obj = document.getElementsByClassName("global")[0];
+			url = window.location.href;
+			obj.innerHTML = "this page URL is \"" + url + "\".<br>" + obj.innerHTML;
+			pageSetup();
+		}
+		function setupCursor(){
+			document.body.style.cursor = "help";
+		}
+		function setTimedBackground(){
+			var obj = document.getElementsByClassName("global")[0];
+			hours = new Date().getHours();
+			if(hours <3)
+				document.body.style.backgroundImage = "url('background/night.jpg')";
+			if(hours >= 3 && hours <= 9)
+				document.body.style.backgroundImage = "url('background/morning.jpg')";
+			else if(hours > 9 && hours < 18)
+				document.body.style.backgroundImage = "url('background/day.jpg')";
+			else
+				document.body.style.backgroundImage = "url('background/sunset.jpg')";
+		}
+	</script>
+</head>
+<body onload=" setTimedBackground(); setupCursor(); pageSetup(); askName(); showURL(); pageSetup();" onresize="pageSetup();">
+	<div class="global">
+
+	</div>
+</body>
+</html>
+

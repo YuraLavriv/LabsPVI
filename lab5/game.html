@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Home</title>
+		<link rel="stylesheet" href="styles.css">
+
+		<script src="jquery.js"></script>
+		<script>
+			function pageSetup() {
+			var form = document.getElementsByClassName("global")[0];
+			var offsetHeight = (window.innerHeight - form.offsetHeight)/2;
+			var offsetWidth = (window.innerWidth - form.offsetWidth)/2;
+			
+			form.style.position = "absolute";
+			if(offsetHeight <= 0) offsetHeight = 0;
+			form.style.top = offsetHeight + "px";
+			form.style.left = offsetWidth + "px";
+			th_width = $("th").css("width");
+
+			$("th").css("height", th_width);
+			
+		}
+		</script>
+
+		<script>
+		var username;
+		var cells = [
+			['_', '_', '_'],
+			['_', '_', '_'],
+			['_', '_', '_'],
+		];
+
+		//X or O
+		var playsBy = '_';
+		var waiting = false;
+		var endGame = false;
+
+		function CheckLogged(){
+				var login = $("#username").val();
+				var pass = $("#password").val();
+				$.ajax({
+					type: 'POST',
+					url: 'main.php',
+					dataType: 'json',
+					data: {},
+
+					success: function(json, textstatus) {
+						if(json.logged == false)
+							location.href = 'login.html';
+						else
+						{
+							$("#username").html(json.username);
+						}
+					
+					}
+				})
+		}
+
+
+		function getAllIndexes(arr, val) {
+			var indexes = [];
+			for(var i = 0; i < arr.length; i++)
+				for(var j = 0; j < arr[i].length; j++)
+					if(arr[i][j] == val)
+						indexes.push([i, j]);
+		    return indexes;
+		}
+
+			function PlayByX(){
+				if(playsBy != '_')
+					return;
+
+				playsBy = 'X';
+				waiting = false;
+				$("#x_selection").css("background-color","#90a9b5");
+			}
+
+			function PlayByO(){
+				if(playsBy != '_')
+					return;
+				playsBy = 'O';
+				waiting = true;
+				$("#o_selection").css("background-color","#90a9b5");
+				WaitForOpponent();
+			}
+
+			function checkWin(){
+				var rows = [
+				cells[0][0] + cells[0][1] + cells[0][2],
+				cells[1][0] + cells[1][1] + cells[1][2],
+				cells[2][0] + cells[2][1] + cells[2][2],
+
+				cells[0][0] + cells[1][0] + cells[2][0],
+				cells[0][1] + cells[1][1] + cells[2][1],
+				cells[0][2] + cells[1][2] + cells[2][2],
+
+				cells[0][0] + cells[1][1] + cells[2][2],
+				cells[2][0] + cells[1][1] + cells[0][2],
+				]
+				for(var i = 0; i < 8; i++)
+					if(rows[i] == 'XXX')
+						return 'X';
+					else if(rows[i] == 'OOO')
+						return 'O';
+				if(getAllIndexes(cells, '_').length <= 0)
+					return '_'
+				return 0;
+			}
+
+			function checkDangerCells(){
+				var rows = [
+				[cells[0][0], cells[0][1], cells[0][2]],
+				[cells[1][0], cells[1][1], cells[1][2]],
+				[cells[2][0], cells[2][1], cells[2][2]],
+
+				[cells[0][0], cells[1][0], cells[2][0]],
+				[cells[0][1], cells[1][1], cells[2][1]],
+				[cells[0][2], cells[1][2], cells[2][2]],
+
+				[cells[0][0], cells[1][1], cells[2][2]],
+				[cells[2][0], cells[1][1], cells[0][2]],
+				]
+				var rowIdxs = [
+				[[0, 0], [0, 1], [0, 2]],
+				[[1, 0], [1, 1], [1, 2]],
+				[[2, 0], [2, 1], [2, 2]],
+
+				[[0, 0], [1, 0], [2, 0]],
+				[[0, 1], [1, 1], [2, 1]],
+				[[0, 2], [1, 2], [2, 2]],
+
+				[[0, 0], [1, 1], [2, 2]],
+				[[2, 0], [1, 1], [0, 2]],
+				]
+
+				var dangerCells =[];
+
+				for(var i = 0; i < 8; i++)
+					{
+						var spaces =0;
+						var spacePos = [0,0];
+						var Os = 0;
+						var Xs = 0;
+						for(var j = 0; j < 3; j++)
+							if(rows[i][j] == '_')
+							{
+								spaces++;
+								spacePos = rowIdxs[i][j];
+							}
+							else if(rows[i][j] == 'X')
+								Xs++;
+							else if(rows[i][j] == 'O')
+								Os++;
+						if(Os == 2 && playsBy == 'O' && spaces == 1)
+							dangerCells.push(spacePos);
+						if(Xs == 2 && playsBy == 'X' && spaces == 1)
+							dangerCells.push(spacePos);
+					}
+
+				return dangerCells;
+			}
+
+			function WaitForOpponent(){
+				if(!waiting)
+					return;
+				
+
+				var cellsToPlace = [];
+				cellsToPlace = checkDangerCells();
+				console.log('dangerCells: ' + cellsToPlace);
+
+				var cell = [];
+
+				if(cellsToPlace.length < 1)
+				{
+					var freeCells = getAllIndexes(cells,'_');
+					cell = freeCells[Math.floor(Math.random()*freeCells.length)];
+				}
+				else if(cellsToPlace.length == 1)
+				{
+					cell = cellsToPlace[0];
+				}
+				else
+				{
+					cell = cellsToPlace[Math.floor(Math.random()*cellsToPlace.length)];
+				}
+				
+				if(playsBy == 'O')
+					PlaceAt(cell[0], cell[1], 'X', false);
+				else
+					PlaceAt(cell[0], cell[1], 'O', false);
+				waiting = false;
+
+			}
+
+			function PlaceAt(i, j, sign = playsBy, wait = true) {
+				console.log('cell ' + i + ':' + j + ' by ' + sign);
+				if(sign == '_' || (waiting && wait) || endGame)
+					return;
+
+				var cell = cells[i][j];
+				if(cell != '_')
+					return;
+
+				$("#th_"+i+"_"+j).html(sign);
+				$("#th_"+i+"_"+j).css("color", "#CFD8DC");
+				cells[i][j] = sign;
+
+				var winner = checkWin();
+				if(winner == 'X' || winner == 'O')
+				{
+					$("#end_game_hint").html(winner + " wins!<br><a href='./game.html' class = 'button'>Play again</a>");
+					endGame = true;
+					return;
+				}
+				else if(winner == '_')
+				{
+					$("#end_game_hint").html("No one wins!<br><a href='./game.html' class = 'button'>Play again</a>");
+					endGame = true;
+					return;
+				}
+
+				if(wait)
+				{
+					waiting = true;
+					WaitForOpponent();
+				}
+				
+			}
+		</script>
+	</head>
+	<body onload='$("th").css("color","#607D8B"); CheckLogged(); $("#register").hide(); $("#login-hint").hide(); $("#pass-hint").hide(); $("#login").val(""); $("#pass").val(""); pageSetup();' onresize='pageSetup();'>
+		<a class="menu_button" href="logout.php">logout</a>
+		<a class="menu_button" href="Index.html">Home</a>
+		
+
+		<div class="global">
+			<span id="username">
+				%Username%
+			</span>
+			vs computer
+			<br>
+			Select your character
+			<br>
+			<a class="button" id="x_selection" onclick="PlayByX();">X</a>
+			<a class="button" id="o_selection" onclick="PlayByO();">O</a>
+			<br>
+			<br>
+			<span id="end_game_hint"></span>
+			<br>
+			<table class="tic_tac_toe">
+				<tr>
+					<th onclick="PlaceAt(0,0);" id="th_0_0">
+						X
+					</th>
+					<th onclick="PlaceAt(0,1);" id="th_0_1">
+						X
+					</th>
+					<th onclick="PlaceAt(0,2);" id="th_0_2">
+						X
+					</th>
+				</tr>
+				<tr>
+					<th onclick="PlaceAt(1,0);" id="th_1_0">
+						X
+					</th>
+					<th onclick="PlaceAt(1,1);" id="th_1_1">
+						X
+					</th>
+					<th onclick="PlaceAt(1,2);" id="th_1_2">
+						X
+					</th>
+				</tr>
+				<tr>
+					<th onclick="PlaceAt(2,0);" id="th_2_0">
+						X
+					</th>
+					<th onclick="PlaceAt(2,1);" id="th_2_1">
+						X
+					</th>
+					<th onclick="PlaceAt(2,2);" id="th_2_2">
+						X
+					</th>
+				</tr>
+			</table>
+
+
+		</div>
+	</body>
+</html>
